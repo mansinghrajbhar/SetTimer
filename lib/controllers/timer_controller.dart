@@ -10,6 +10,7 @@ import '../services/background_service.dart';
 import '../services/voice_coaching_service.dart';
 import '../services/workout_session_service.dart';
 import '../services/achievement_service.dart';
+import '../services/sensor_service.dart';
 
 class TimerController extends ChangeNotifier with WidgetsBindingObserver {
   TimerModel _timer = TimerModel(
@@ -25,6 +26,7 @@ class TimerController extends ChangeNotifier with WidgetsBindingObserver {
   final VoiceCoachingService _voiceCoachingService = VoiceCoachingService();
   final WorkoutSessionService _sessionService = WorkoutSessionService();
   final AchievementService _achievementService = AchievementService();
+  final SensorService _sensorService = SensorService();
 
   DateTime? _pausedAt;
   PresetModel? _currentPreset;
@@ -33,9 +35,11 @@ class TimerController extends ChangeNotifier with WidgetsBindingObserver {
   AudioService get audioService => _audioService;
   VoiceCoachingService get voiceCoachingService => _voiceCoachingService;
   WorkoutSessionService get sessionService => _sessionService;
+  SensorService get sensorService => _sensorService;
 
   // Initialize the timer controller
   Future<void> initialize() async {
+    _sensorService.onTrigger = _handleSensorTrigger;
     await _audioService.initialize();
     await _voiceCoachingService.initialize();
     await _sessionService.restoreActiveSession();
@@ -105,6 +109,15 @@ class TimerController extends ChangeNotifier with WidgetsBindingObserver {
   void clearCurrentPreset() {
     _currentPreset = null;
     print('Preset cleared - now using custom settings');
+  }
+
+  void _handleSensorTrigger() {
+    if (_timer.state == TimerState.idle || _timer.state == TimerState.paused) {
+      startTimer();
+    } else if (_timer.state == TimerState.running ||
+        _timer.state == TimerState.resting) {
+      pauseTimer();
+    }
   }
 
   void startTimer() async {
@@ -455,6 +468,7 @@ class TimerController extends ChangeNotifier with WidgetsBindingObserver {
     _audioService.stopAllSounds();
     _voiceCoachingService.stop();
     _backgroundService.disableBackgroundMode();
+    _sensorService.dispose();
     _sessionService.dispose();
     WidgetsBinding.instance.removeObserver(this);
     
