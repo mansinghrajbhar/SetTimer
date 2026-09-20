@@ -960,84 +960,70 @@ class _SettingsModalState extends State<_SettingsModal> {
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+
     return Container(
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
       constraints: BoxConstraints(
-        maxHeight: MediaQuery.of(context).size.height * 0.8,
+        maxHeight: MediaQuery.of(context).size.height * 0.82,
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // Handle bar
-          Container(
-            width: 40,
-            height: 4,
-            decoration: BoxDecoration(
-              color: Colors.white30,
-              borderRadius: BorderRadius.circular(2),
-            ),
+          Text(
+            'Timer settings',
+            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                  fontWeight: FontWeight.w800,
+                ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            'Tune the rounds for your boxing session.',
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: scheme.onSurfaceVariant,
+                ),
           ),
           const SizedBox(height: 20),
-
-          const Text(
-            'Timer Settings',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 20,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          const SizedBox(height: 30),
-
           Flexible(
             child: SingleChildScrollView(
+              physics: const BouncingScrollPhysics(),
               child: Column(
                 children: [
-                  _buildSlider('Total Sets', _totalSets, 1, 20, (value) {
+                  _buildSlider('Total rounds', _totalSets, 1, 20, (value) {
                     setState(() => _totalSets = value.round());
                   }, context),
-                  _buildSlider('Set Duration (seconds)', _setDuration, 10, 300, (value) {
+                  _buildSlider('Round duration (seconds)', _setDuration, 10, 300, (value) {
                     setState(() => _setDuration = value.round());
                   }, context),
-                  _buildSlider('Rest Duration (seconds)', _restDuration, 5, 120, (value) {
+                  _buildSlider('Rest duration (seconds)', _restDuration, 5, 120, (value) {
                     setState(() => _restDuration = value.round());
                   }, context),
-                  _buildSlider('Rest After Sets', _restAfterSets, 1, 5, (value) {
+                  _buildSlider('Rest after rounds', _restAfterSets, 1, 5, (value) {
                     setState(() => _restAfterSets = value.round());
                   }, context),
                 ],
               ),
             ),
           ),
-
-          const SizedBox(height: 20),
-
+          const SizedBox(height: 14),
           Row(
             children: [
               Expanded(
-                child: ElevatedButton(
+                child: OutlinedButton(
                   onPressed: () => Navigator.pop(context),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.white30,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
+                  style: OutlinedButton.styleFrom(
+                    minimumSize: const Size.fromHeight(54),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(18),
                     ),
                   ),
-                  child: const Text(
-                    'Cancel',
-                    style: TextStyle(
-                      color: Colors.white70,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
+                  child: const Text('Cancel'),
                 ),
               ),
-              const SizedBox(width: 16),
+              const SizedBox(width: 10),
               Expanded(
                 flex: 2,
-                child: ElevatedButton(
+                child: FilledButton(
                   onPressed: () {
                     widget.controller.updateTimerSettings(
                       totalSets: _totalSets,
@@ -1046,86 +1032,87 @@ class _SettingsModalState extends State<_SettingsModal> {
                       restAfterSets: _restAfterSets,
                     );
                     Navigator.pop(context);
-
-                    // Show confirmation
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Settings updated successfully!'),
-                        backgroundColor: Color(0xFF00D4AA),
-                        duration: Duration(seconds: 2),
+                      SnackBar(
+                        content: const Text('Timer settings updated'),
+                        backgroundColor: scheme.inverseSurface,
                       ),
                     );
                   },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF00D4AA),
-                    padding: const EdgeInsets.symmetric(vertical: 16),
+                  style: FilledButton.styleFrom(
+                    minimumSize: const Size.fromHeight(54),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(18),
                     ),
                   ),
-                  child: const Text(
-                    'Apply Settings',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
+                  child: const Text('Apply'),
                 ),
               ),
             ],
           ),
-
-          const SizedBox(height: 20),
         ],
       ),
     );
   }
 
-  Widget _buildSlider(String label, int value, int min, int max, ValueChanged<double> onChanged, BuildContext context) {
+  Widget _buildSlider(
+    String label,
+    int value,
+    int min,
+    int max,
+    ValueChanged<double> onChanged,
+    BuildContext context,
+  ) {
+    final scheme = Theme.of(context).colorScheme;
+
     return Padding(
-      padding: const EdgeInsets.only(bottom: 20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      padding: const EdgeInsets.only(bottom: 18),
+      child: Card(
+        elevation: 0,
+        color: scheme.surfaceContainerLow,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 14, 16, 8),
+          child: Column(
             children: [
-              Text(
-                label,
-                style: const TextStyle(
-                  color: Colors.white70,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: Text(
+                      label,
+                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                            fontWeight: FontWeight.w700,
+                          ),
+                    ),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                    decoration: BoxDecoration(
+                      color: scheme.primaryContainer,
+                      borderRadius: BorderRadius.circular(999),
+                    ),
+                    child: Text(
+                      value.toString(),
+                      style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                            color: scheme.onPrimaryContainer,
+                            fontWeight: FontWeight.w800,
+                          ),
+                    ),
+                  ),
+                ],
               ),
-              Text(
-                value.toString(),
-                style: const TextStyle(
-                  color: Color(0xFF00D4AA),
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                ),
+              Slider(
+                value: value.toDouble(),
+                min: min.toDouble(),
+                max: max.toDouble(),
+                onChanged: onChanged,
               ),
             ],
           ),
-          const SizedBox(height: 8),
-          SliderTheme(
-            data: SliderTheme.of(context).copyWith(
-              activeTrackColor: const Color(0xFF00D4AA),
-              inactiveTrackColor: Colors.white.withOpacity(0.2),
-              thumbColor: const Color(0xFF00D4AA),
-              overlayColor: const Color(0xFF00D4AA).withOpacity(0.2),
-              trackHeight: 4,
-            ),
-            child: Slider(
-              value: value.toDouble(),
-              min: min.toDouble(),
-              max: max.toDouble(),
-              onChanged: onChanged,
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }
