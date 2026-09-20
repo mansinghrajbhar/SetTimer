@@ -1432,36 +1432,48 @@ class _TimerViewState extends State<TimerView> with TickerProviderStateMixin {
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 16),
-                RadioGroup<ThemeMode>(
-                  groupValue: widget.currentThemeMode,
-                  onChanged: (mode) {
-                    if (mode != null) {
-                      widget.onThemeModeChanged(mode);
-                      Navigator.pop(sheetContext);
-                    }
-                  },
-                  child: Column(
-                    children: [
-                      RadioListTile<ThemeMode>(
-                        value: ThemeMode.system,
-                        title: const Text('Dynamic / System'),
-                        subtitle: const Text('Use Android Material You wallpaper colors'),
-                        secondary: Icon(Icons.auto_awesome, color: scheme.primary),
-                      ),
-                      RadioListTile<ThemeMode>(
-                        value: ThemeMode.light,
-                        title: const Text('Light'),
-                        subtitle: const Text('Bright Material theme'),
-                        secondary: Icon(Icons.light_mode_outlined, color: scheme.primary),
-                      ),
-                      RadioListTile<ThemeMode>(
-                        value: ThemeMode.dark,
-                        title: const Text('Dark'),
-                        subtitle: const Text('Dark Material theme'),
-                        secondary: Icon(Icons.dark_mode_outlined, color: scheme.primary),
-                      ),
-                    ],
-                  ),
+                Column(
+                  children: [
+                    RadioListTile<ThemeMode>(
+                      value: ThemeMode.system,
+                      groupValue: widget.currentThemeMode,
+                      onChanged: (mode) {
+                        if (mode != null) {
+                          widget.onThemeModeChanged(mode);
+                          Navigator.pop(sheetContext);
+                        }
+                      },
+                      title: const Text('Dynamic / System'),
+                      subtitle: const Text('Use Android Material You wallpaper colors'),
+                      secondary: Icon(Icons.auto_awesome, color: scheme.primary),
+                    ),
+                    RadioListTile<ThemeMode>(
+                      value: ThemeMode.light,
+                      groupValue: widget.currentThemeMode,
+                      onChanged: (mode) {
+                        if (mode != null) {
+                          widget.onThemeModeChanged(mode);
+                          Navigator.pop(sheetContext);
+                        }
+                      },
+                      title: const Text('Light'),
+                      subtitle: const Text('Bright Material theme'),
+                      secondary: Icon(Icons.light_mode_outlined, color: scheme.primary),
+                    ),
+                    RadioListTile<ThemeMode>(
+                      value: ThemeMode.dark,
+                      groupValue: widget.currentThemeMode,
+                      onChanged: (mode) {
+                        if (mode != null) {
+                          widget.onThemeModeChanged(mode);
+                          Navigator.pop(sheetContext);
+                        }
+                      },
+                      title: const Text('Dark'),
+                      subtitle: const Text('Dark Material theme'),
+                      secondary: Icon(Icons.dark_mode_outlined, color: scheme.primary),
+                    ),
+                  ],
                 ),
               ],
             ),
