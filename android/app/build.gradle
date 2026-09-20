@@ -17,7 +17,7 @@ apply from: "$flutterRoot/packages/flutter_tools/gradle/flutter.gradle"
 
 android {
     namespace = "com.settimer.settimer"
-    compileSdk = 34 // Ensure this is appropriate for AGP 7.3.0
+    compileSdk = 34
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
@@ -31,10 +31,9 @@ android {
     defaultConfig {
         applicationId = "com.settimer.settimer"
         minSdk = 23
-        targetSdk = 34 // Ensure this is appropriate
+        targetSdk = 34
         versionCode = 1
         versionName = "1.0.0"
-        
         multiDexEnabled true
     }
 
@@ -43,9 +42,7 @@ android {
             // Default debug signing config
         }
         release {
-            // TODO: Configure your release signing key
-            // For now, this block can be empty or set up as needed for release builds.
-            // Do NOT put 'signingConfig signingConfigs.debug' here!
+            // Temporary debug signing for personal testing.
         }
     }
 
@@ -57,16 +54,18 @@ android {
         }
         release {
             signingConfig signingConfigs.debug
-            minifyEnabled true
-            shrinkResources true
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-            
-            // Optimize for distribution
+
+            // Keep R8/resource shrinking disabled for this test build.
+            // The Flutter engine references optional Google Play deferred-component
+            // classes that are not bundled by this standalone APK configuration.
+            minifyEnabled false
+            shrinkResources false
+
             zipAlignEnabled true
             debuggable false
         }
     }
-    
+
     buildFeatures {
         buildConfig true
     }
