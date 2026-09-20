@@ -834,7 +834,10 @@ class _TimerViewState extends State<TimerView> with TickerProviderStateMixin {
         // Calculate progress
         final totalDuration = timer.isInRestPeriod ? timer.restDurationSeconds : timer.setDurationSeconds;
         final elapsed = totalDuration - timer.remainingSeconds;
-        final progressValue = totalDuration > 0 ? elapsed / totalDuration : 0.0;
+        // Keep visual progress valid after restore/background timing changes.
+        final progressValue = totalDuration > 0
+            ? (elapsed / totalDuration).clamp(0.0, 1.0).toDouble()
+            : 0.0;
 
         // Responsive font sizes based on circle size
         final timerFontSize = (circleSize * 0.15).clamp(32.0, 52.0);
@@ -1258,141 +1261,143 @@ class _TimerViewState extends State<TimerView> with TickerProviderStateMixin {
   void _showQuickActionsMenu(BuildContext context, TimerController controller) {
     showModalBottomSheet(
       context: context,
-      backgroundColor: const Color(0xFF1A1A1A),
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      builder: (context) => Container(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // Modern handle bar
-            Container(
-              width: 36,
-              height: 3,
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.3),
-                borderRadius: BorderRadius.circular(2),
-              ),
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      useSafeArea: true,
+      builder: (context) => DraggableScrollableSheet(
+        expand: false,
+        initialChildSize: 0.72,
+        minChildSize: 0.45,
+        maxChildSize: 0.94,
+        snap: true,
+        snapSizes: const [0.72, 0.94],
+        builder: (context, scrollController) {
+          return Container(
+            decoration: const BoxDecoration(
+              color: Color(0xFF1A1A1A),
+              borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
             ),
-            const SizedBox(height: 24),
-
-            // Header with modern styling
-            Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [
-                        const Color(0xFF00D4AA).withOpacity(0.2),
-                        const Color(0xFF00D4AA).withOpacity(0.1),
-                      ],
-                    ),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: const Icon(
-                    Icons.tune_rounded,
-                    color: Color(0xFF00D4AA),
-                    size: 20,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                const Text(
-                  'Quick Actions',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 20,
-                    fontWeight: FontWeight.w600,
+            child: CustomScrollView(
+              controller: scrollController,
+              slivers: [
+                SliverPadding(
+                  padding: const EdgeInsets.fromLTRB(24, 12, 24, 24),
+                  sliver: SliverList(
+                    delegate: SliverChildListDelegate([
+                      Center(
+                        child: Container(
+                          width: 40,
+                          height: 4,
+                          decoration: BoxDecoration(
+                            color: Colors.white30,
+                            borderRadius: BorderRadius.circular(2),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF00D4AA).withOpacity(0.15),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: const Icon(
+                              Icons.tune_rounded,
+                              color: Color(0xFF00D4AA),
+                              size: 20,
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          const Text(
+                            'Quick Actions',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 20,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 24),
+                      _buildMenuOption(
+                        icon: Icons.volume_up_outlined,
+                        title: 'Audio Settings',
+                        subtitle: 'Sounds & notifications',
+                        color: const Color(0xFF9C27B0),
+                        onTap: () {
+                          Navigator.pop(context);
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const AudioSettingsView(),
+                            ),
+                          );
+                        },
+                      ),
+                      const SizedBox(height: 12),
+                      _buildMenuOption(
+                        icon: Icons.record_voice_over_outlined,
+                        title: 'Voice Coaching',
+                        subtitle: 'Voice guidance & prompts',
+                        color: const Color(0xFF9C27B0),
+                        onTap: () {
+                          Navigator.pop(context);
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const VoiceCoachingSettingsView(),
+                            ),
+                          );
+                        },
+                      ),
+                      const SizedBox(height: 12),
+                      _buildMenuOption(
+                        icon: Icons.bookmark_add_outlined,
+                        title: 'Save Template',
+                        subtitle: 'Save current settings as preset',
+                        color: const Color(0xFF00D4AA),
+                        onTap: () {
+                          Navigator.pop(context);
+                          _showSaveTemplateDialog(controller);
+                        },
+                      ),
+                      const SizedBox(height: 12),
+                      _buildMenuOption(
+                        icon: Icons.sensors_outlined,
+                        title: 'Sensor Controls',
+                        subtitle: 'Hands-free start & pause',
+                        color: const Color(0xFF00D4AA),
+                        onTap: () {
+                          Navigator.pop(context);
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => SensorSettingsView(controller: controller),
+                            ),
+                          );
+                        },
+                      ),
+                      const SizedBox(height: 12),
+                      _buildMenuOption(
+                        icon: Icons.settings_outlined,
+                        title: 'Timer Settings',
+                        subtitle: 'Configure sets, duration & rest',
+                        color: const Color(0xFF2196F3),
+                        onTap: () {
+                          Navigator.pop(context);
+                          _showSettingsModal(context, controller);
+                        },
+                      ),
+                      const SizedBox(height: 8),
+                    ]),
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 24),
-
-            // Modern menu items
-            _buildMenuOption(
-              icon: Icons.volume_up_outlined,
-              title: 'Audio Settings',
-              subtitle: 'Sounds & notifications',
-              color: const Color(0xFF9C27B0),
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const AudioSettingsView(),
-                  ),
-                );
-              },
-            ),
-
-            const SizedBox(height: 12),
-
-            _buildMenuOption(
-              icon: Icons.record_voice_over_outlined,
-              title: 'Voice Coaching',
-              subtitle: 'Voice guidance & prompts',
-              color: const Color(0xFF9C27B0),
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const VoiceCoachingSettingsView(),
-                  ),
-                );
-              },
-            ),
-
-            const SizedBox(height: 12),
-
-            _buildMenuOption(
-              icon: Icons.bookmark_add_outlined,
-              title: 'Save Template',
-              subtitle: 'Save current settings as preset',
-              color: const Color(0xFF00D4AA),
-              onTap: () {
-                Navigator.pop(context);
-                _showSaveTemplateDialog(controller);
-              },
-            ),
-
-            const SizedBox(height: 12),
-
-            _buildMenuOption(
-              icon: Icons.sensors_outlined,
-              title: 'Sensor Controls',
-              subtitle: 'Hands-free start & pause',
-              color: const Color(0xFF00D4AA),
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => SensorSettingsView(controller: controller),
-                  ),
-                );
-              },
-            ),
-
-            const SizedBox(height: 12),
-
-            _buildMenuOption(
-              icon: Icons.settings_outlined,
-              title: 'Timer Settings',
-              subtitle: 'Configure sets, duration & rest',
-              color: const Color(0xFF2196F3),
-              onTap: () {
-                Navigator.pop(context);
-                _showSettingsModal(context, controller);
-              },
-            ),
-
-            const SizedBox(height: 20),
-          ],
-        ),
+          );
+        },
       ),
     );
   }
