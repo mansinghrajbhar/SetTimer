@@ -13,7 +13,14 @@ import 'workout_history_view.dart';
 import 'sensor_settings_view.dart';
 
 class TimerView extends StatefulWidget {
-  const TimerView({super.key});
+  final ThemeMode currentThemeMode;
+  final ValueChanged<ThemeMode> onThemeModeChanged;
+
+  const TimerView({
+    super.key,
+    this.currentThemeMode = ThemeMode.system,
+    required this.onThemeModeChanged,
+  });
 
   @override
   State<TimerView> createState() => _TimerViewState();
@@ -85,8 +92,9 @@ class _TimerViewState extends State<TimerView> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
     return Scaffold(
-      backgroundColor: const Color(0xFF0A0A0A),
+      backgroundColor: colors.surface,
       resizeToAvoidBottomInset: false,
       body: Consumer<TimerController>(
         builder: (context, controller, child) {
@@ -125,17 +133,7 @@ class _TimerViewState extends State<TimerView> with TickerProviderStateMixin {
           final sidePadding = isVerySmallScreen ? 16.0 : 20.0;
 
           return Container(
-            decoration: const BoxDecoration(
-              gradient: RadialGradient(
-                center: Alignment.center,
-                radius: 1.5,
-                colors: [
-                  Color(0xFF1A1A1A),
-                  Color(0xFF0A0A0A),
-                  Color(0xFF050505),
-                ],
-              ),
-            ),
+            color: Theme.of(context).colorScheme.surface,
             child: SafeArea(
               child: Padding(
                 padding: EdgeInsets.symmetric(horizontal: sidePadding, vertical: 12.0),
@@ -1322,6 +1320,17 @@ class _TimerViewState extends State<TimerView> with TickerProviderStateMixin {
                       ),
                       const SizedBox(height: 24),
                       _buildMenuOption(
+                        icon: Icons.palette_outlined,
+                        title: 'Appearance',
+                        subtitle: 'Material You, light & dark themes',
+                        color: Theme.of(context).colorScheme.primary,
+                        onTap: () {
+                          Navigator.pop(context);
+                          _showThemePicker();
+                        },
+                      ),
+                      const SizedBox(height: 12),
+                      _buildMenuOption(
                         icon: Icons.volume_up_outlined,
                         title: 'Audio Settings',
                         subtitle: 'Sounds & notifications',
@@ -1399,6 +1408,66 @@ class _TimerViewState extends State<TimerView> with TickerProviderStateMixin {
           );
         },
       ),
+    );
+  }
+
+  void _showThemePicker() {
+    showModalBottomSheet(
+      context: context,
+      showDragHandle: true,
+      useSafeArea: true,
+      builder: (sheetContext) {
+        final scheme = Theme.of(sheetContext).colorScheme;
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text('Appearance', style: Theme.of(sheetContext).textTheme.headlineSmall),
+                const SizedBox(height: 8),
+                Text(
+                  'Choose how SetTimer follows Android system colors.',
+                  style: Theme.of(sheetContext).textTheme.bodyMedium,
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 16),
+                RadioGroup<ThemeMode>(
+                  groupValue: widget.currentThemeMode,
+                  onChanged: (mode) {
+                    if (mode != null) {
+                      widget.onThemeModeChanged(mode);
+                      Navigator.pop(sheetContext);
+                    }
+                  },
+                  child: Column(
+                    children: [
+                      RadioListTile<ThemeMode>(
+                        value: ThemeMode.system,
+                        title: const Text('Dynamic / System'),
+                        subtitle: const Text('Use Android Material You wallpaper colors'),
+                        secondary: Icon(Icons.auto_awesome, color: scheme.primary),
+                      ),
+                      RadioListTile<ThemeMode>(
+                        value: ThemeMode.light,
+                        title: const Text('Light'),
+                        subtitle: const Text('Bright Material theme'),
+                        secondary: Icon(Icons.light_mode_outlined, color: scheme.primary),
+                      ),
+                      RadioListTile<ThemeMode>(
+                        value: ThemeMode.dark,
+                        title: const Text('Dark'),
+                        subtitle: const Text('Dark Material theme'),
+                        secondary: Icon(Icons.dark_mode_outlined, color: scheme.primary),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 
