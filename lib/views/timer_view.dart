@@ -10,6 +10,7 @@ import 'preset_selection_view.dart';
 import 'audio_settings_view.dart';
 import 'voice_coaching_settings_view.dart';
 import 'workout_history_view.dart';
+import 'sensor_settings_view.dart';
 
 class TimerView extends StatefulWidget {
   const TimerView({super.key});
@@ -1355,6 +1356,24 @@ class _TimerViewState extends State<TimerView> with TickerProviderStateMixin {
               onTap: () {
                 Navigator.pop(context);
                 _showSaveTemplateDialog(controller);
+              },
+            ),
+
+            const SizedBox(height: 12),
+
+            _buildMenuOption(
+              icon: Icons.sensors_outlined,
+              title: 'Sensor Controls',
+              subtitle: 'Hands-free start & pause',
+              color: const Color(0xFF00D4AA),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => SensorSettingsView(controller: controller),
+                  ),
+                );
               },
             ),
 
