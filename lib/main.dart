@@ -41,30 +41,12 @@ class _WorkoutSetTimerAppState extends State<WorkoutSetTimerApp> {
   void initState() {
     super.initState();
     _themeMode = widget.initialThemeMode;
-    if (_themeMode != ThemeMode.system) {
-      _applySystemUi(_themeMode == ThemeMode.light ? Brightness.light : Brightness.dark);
-    }
   }
 
   Future<void> setThemeMode(ThemeMode mode) async {
     setState(() => _themeMode = mode);
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('app_theme_mode', mode.name);
-    if (mode != ThemeMode.system) {
-      _applySystemUi(mode == ThemeMode.light ? Brightness.light : Brightness.dark);
-    }
-  }
-
-  void _applySystemUi(Brightness brightness) {
-    final isLight = brightness == Brightness.light;
-    SystemChrome.setSystemUIOverlayStyle(
-      SystemUiOverlayStyle(
-        statusBarColor: Colors.transparent,
-        statusBarIconBrightness: isLight ? Brightness.dark : Brightness.light,
-        systemNavigationBarColor: isLight ? Colors.white : Colors.black,
-        systemNavigationBarIconBrightness: isLight ? Brightness.dark : Brightness.light,
-      ),
-    );
   }
 
   ThemeData _buildTheme(ColorScheme scheme) {
@@ -165,13 +147,20 @@ class _WorkoutSetTimerAppState extends State<WorkoutSetTimerApp> {
             ),
             debugShowCheckedModeBanner: false,
             builder: (context, child) {
-              final brightness = Theme.of(context).brightness;
-              WidgetsBinding.instance.addPostFrameCallback((_) {
-                _applySystemUi(brightness);
-              });
-              return GestureDetector(
-                onTap: () => FocusScope.of(context).unfocus(),
-                child: child,
+              final scheme = Theme.of(context).colorScheme;
+              final isLight = scheme.brightness == Brightness.light;
+              return AnnotatedRegion<SystemUiOverlayStyle>(
+                value: SystemUiOverlayStyle(
+                  statusBarColor: Colors.transparent,
+                  statusBarIconBrightness: isLight ? Brightness.dark : Brightness.light,
+                  systemNavigationBarColor: scheme.surface,
+                  systemNavigationBarIconBrightness: isLight ? Brightness.dark : Brightness.light,
+                  systemNavigationBarDividerColor: Colors.transparent,
+                ),
+                child: GestureDetector(
+                  onTap: () => FocusScope.of(context).unfocus(),
+                  child: child,
+                ),
               );
             },
           );
