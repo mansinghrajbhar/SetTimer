@@ -6,8 +6,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'controllers/timer_controller.dart';
 import 'views/timer_view.dart';
 
-enum AppThemeMode { system, light, dark }
-
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -19,39 +17,41 @@ Future<void> main() async {
   final prefs = await SharedPreferences.getInstance();
   final savedTheme = prefs.getString('app_theme_mode');
   final themeMode = switch (savedTheme) {
-    'light' => AppThemeMode.light,
-    'dark' => AppThemeMode.dark,
-    _ => AppThemeMode.system,
+    'light' => ThemeMode.light,
+    'dark' => ThemeMode.dark,
+    _ => ThemeMode.system,
   };
 
   runApp(WorkoutSetTimerApp(initialThemeMode: themeMode));
 }
 
 class WorkoutSetTimerApp extends StatefulWidget {
-  final AppThemeMode initialThemeMode;
+  final ThemeMode initialThemeMode;
 
-  const WorkoutSetTimerApp({super.key, this.initialThemeMode = AppThemeMode.system});
+  const WorkoutSetTimerApp({super.key, this.initialThemeMode = ThemeMode.system});
 
   @override
   State<WorkoutSetTimerApp> createState() => _WorkoutSetTimerAppState();
 }
 
 class _WorkoutSetTimerAppState extends State<WorkoutSetTimerApp> {
-  late AppThemeMode _themeMode;
+  late ThemeMode _themeMode;
 
   @override
   void initState() {
     super.initState();
     _themeMode = widget.initialThemeMode;
-    _applySystemUi(_themeMode == AppThemeMode.light ? Brightness.light : Brightness.dark);
+    if (_themeMode != ThemeMode.system) {
+      _applySystemUi(_themeMode == ThemeMode.light ? Brightness.light : Brightness.dark);
+    }
   }
 
-  Future<void> setThemeMode(AppThemeMode mode) async {
+  Future<void> setThemeMode(ThemeMode mode) async {
     setState(() => _themeMode = mode);
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('app_theme_mode', mode.name);
-    if (mode != AppThemeMode.system) {
-      _applySystemUi(mode == AppThemeMode.light ? Brightness.light : Brightness.dark);
+    if (mode != ThemeMode.system) {
+      _applySystemUi(mode == ThemeMode.light ? Brightness.light : Brightness.dark);
     }
   }
 
@@ -158,11 +158,7 @@ class _WorkoutSetTimerAppState extends State<WorkoutSetTimerApp> {
             title: 'SetTimer',
             theme: _buildTheme(lightScheme),
             darkTheme: _buildTheme(darkScheme),
-            themeMode: _themeMode == AppThemeMode.light
-                ? ThemeMode.light
-                : _themeMode == AppThemeMode.dark
-                    ? ThemeMode.dark
-                    : ThemeMode.system,
+            themeMode: _themeMode,
             home: TimerView(
               currentThemeMode: _themeMode,
               onThemeModeChanged: setThemeMode,
