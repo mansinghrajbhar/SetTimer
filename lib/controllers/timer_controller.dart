@@ -40,6 +40,7 @@ class TimerController extends ChangeNotifier with WidgetsBindingObserver {
   // Initialize the timer controller
   Future<void> initialize() async {
     _sensorService.onTrigger = _handleSensorTrigger;
+    await _sensorService.initialize();
     await _audioService.initialize();
     await _voiceCoachingService.initialize();
     await _sessionService.restoreActiveSession();
@@ -168,8 +169,9 @@ class TimerController extends ChangeNotifier with WidgetsBindingObserver {
         print('⚠️ Failed to disable wakelock: $e');
       }
 
-      // Pause session tracking
+      // Pause session tracking and restore the normal Android system UI.
       await _sessionService.pauseSession();
+      await _backgroundService.disableBackgroundMode();
 
       notifyListeners();
     }
