@@ -8,7 +8,8 @@ enum SoundPack {
   gym('Gym Beast', 'Intense motivational gym sounds'),
   nature('Nature Zen', 'Calming nature-inspired sounds'),
   electronic('Electronic', 'Modern electronic beats and beeps'),
-  minimal('Minimal', 'Subtle and non-intrusive sounds');
+  minimal('Minimal', 'Subtle and non-intrusive sounds'),
+  boxing('Boxing Bell', 'Classic boxing bell for rounds and training');
 
   const SoundPack(this.displayName, this.description);
   final String displayName;
@@ -169,8 +170,16 @@ class AudioService {
 
   // Get sound file path for current pack and sound type
   String _getSoundPath(SoundType soundType) {
-    final packName = _currentSoundPack.name;
     final soundName = _getSoundFileName(soundType);
+
+    // Boxing Bell has a dedicated bell cue for round start/end. Other
+    // events reuse the existing Classic assets so the pack stays lightweight.
+    if (_currentSoundPack == SoundPack.boxing &&
+        (soundType == SoundType.setStart || soundType == SoundType.setEnd)) {
+      return 'sounds/boxing/boxing_bell.wav';
+    }
+
+    final packName = _currentSoundPack.name;
     return 'sounds/$packName/$soundName';
   }
 
@@ -252,6 +261,8 @@ class AudioService {
         return _getElectronicSystemSound(soundType);
       case SoundPack.minimal:
         return _getMinimalSystemSound(soundType);
+      case SoundPack.boxing:
+        return _getBoxingSystemSound(soundType);
     }
   }
 
@@ -320,6 +331,24 @@ class AudioService {
       case SoundType.setStart:
         // Use a ringing cue so the beginning of a round is easier to hear.
         return {'android': AndroidSounds.ringtone, 'ios': IosSounds.triTone};
+      case SoundType.setEnd:
+        return {'android': AndroidSounds.alarm, 'ios': IosSounds.alarm};
+      case SoundType.restStart:
+        return {'android': AndroidSounds.notification, 'ios': IosSounds.receivedMessage};
+      case SoundType.restEnd:
+        return {'android': AndroidSounds.notification, 'ios': IosSounds.glass};
+      case SoundType.workoutComplete:
+        return {'android': AndroidSounds.ringtone, 'ios': IosSounds.triTone};
+      case SoundType.countdown:
+        return {'android': AndroidSounds.notification, 'ios': IosSounds.glass};
+      case SoundType.warning:
+        return {'android': AndroidSounds.alarm, 'ios': IosSounds.alarm};
+    }
+  }
+
+  Map<String, dynamic> _getBoxingSystemSound(SoundType soundType) {
+    switch (soundType) {
+      case SoundType.setStart:
       case SoundType.setEnd:
         return {'android': AndroidSounds.alarm, 'ios': IosSounds.alarm};
       case SoundType.restStart:
@@ -443,6 +472,8 @@ class AudioService {
         return '🎵';
       case SoundPack.minimal:
         return '🔕';
+      case SoundPack.boxing:
+        return '🥊';
     }
   }
 
@@ -459,6 +490,8 @@ class AudioService {
         return '#9C27B0';
       case SoundPack.minimal:
         return '#757575';
+      case SoundPack.boxing:
+        return '#D4A72C';
     }
   }
 
@@ -499,6 +532,13 @@ class AudioService {
           'mood': 'Zen',
           'intensity': 'Very Low',
           'description': 'Soft clicks and minimal notification sounds'
+        };
+      case SoundPack.boxing:
+        return {
+          'theme': 'Classic Boxing',
+          'mood': 'Focused & Energetic',
+          'intensity': 'High',
+          'description': 'Dedicated boxing bell for round start and end'
         };
     }
   }
