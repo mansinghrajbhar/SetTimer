@@ -1,124 +1,183 @@
+import 'package:dynamic_color/dynamic_color.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'controllers/timer_controller.dart';
 import 'views/timer_view.dart';
 
-void main() async {
+enum AppThemeMode { system, light, dark }
+
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Set preferred orientations
   await SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
   ]);
 
-  // Set system UI overlay style for better visual experience
-  SystemChrome.setSystemUIOverlayStyle(
-    const SystemUiOverlayStyle(
-      statusBarColor: Colors.transparent,
-      statusBarIconBrightness: Brightness.light,
-      systemNavigationBarColor: Color(0xFF0A0A0A),
-      systemNavigationBarIconBrightness: Brightness.light,
-    ),
-  );
+  final prefs = await SharedPreferences.getInstance();
+  final savedTheme = prefs.getString('app_theme_mode');
+  final themeMode = switch (savedTheme) {
+    'light' => AppThemeMode.light,
+    'dark' => AppThemeMode.dark,
+    _ => AppThemeMode.system,
+  };
 
-  runApp(const WorkoutSetTimerApp());
+  runApp(WorkoutSetTimerApp(initialThemeMode: themeMode));
 }
 
-class WorkoutSetTimerApp extends StatelessWidget {
-  const WorkoutSetTimerApp({super.key});
+class WorkoutSetTimerApp extends StatefulWidget {
+  final AppThemeMode initialThemeMode;
+
+  const WorkoutSetTimerApp({super.key, this.initialThemeMode = AppThemeMode.system});
+
+  @override
+  State<WorkoutSetTimerApp> createState() => _WorkoutSetTimerAppState();
+}
+
+class _WorkoutSetTimerAppState extends State<WorkoutSetTimerApp> {
+  late AppThemeMode _themeMode;
+
+  @override
+  void initState() {
+    super.initState();
+    _themeMode = widget.initialThemeMode;
+    _applySystemUi(_themeMode == AppThemeMode.light ? Brightness.light : Brightness.dark);
+  }
+
+  Future<void> setThemeMode(AppThemeMode mode) async {
+    setState(() => _themeMode = mode);
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('app_theme_mode', mode.name);
+    if (mode != AppThemeMode.system) {
+      _applySystemUi(mode == AppThemeMode.light ? Brightness.light : Brightness.dark);
+    }
+  }
+
+  void _applySystemUi(Brightness brightness) {
+    final isLight = brightness == Brightness.light;
+    SystemChrome.setSystemUIOverlayStyle(
+      SystemUiOverlayStyle(
+        statusBarColor: Colors.transparent,
+        statusBarIconBrightness: isLight ? Brightness.dark : Brightness.light,
+        systemNavigationBarColor: isLight ? Colors.white : Colors.black,
+        systemNavigationBarIconBrightness: isLight ? Brightness.dark : Brightness.light,
+      ),
+    );
+  }
+
+  ThemeData _buildTheme(ColorScheme scheme) {
+    final base = ThemeData(
+      useMaterial3: true,
+      colorScheme: scheme,
+      brightness: scheme.brightness,
+      visualDensity: VisualDensity.standard,
+    );
+
+    return base.copyWith(
+      scaffoldBackgroundColor: scheme.surface,
+      appBarTheme: AppBarTheme(
+        backgroundColor: scheme.surface,
+        foregroundColor: scheme.onSurface,
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        centerTitle: false,
+      ),
+      cardTheme: CardTheme(
+        elevation: 0,
+        color: scheme.surfaceContainerLow,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+      ),
+      inputDecorationTheme: InputDecorationTheme(
+        filled: true,
+        fillColor: scheme.surfaceContainerHighest.withOpacity(0.55),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: BorderSide.none,
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: BorderSide.none,
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: BorderSide(color: scheme.primary, width: 2),
+        ),
+      ),
+      elevatedButtonTheme: ElevatedButtonThemeData(
+        style: ElevatedButton.styleFrom(
+          minimumSize: const Size(0, 52),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+        ),
+      ),
+      filledButtonTheme: FilledButtonThemeData(
+        style: FilledButton.styleFrom(
+          minimumSize: const Size(0, 52),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+        ),
+      ),
+      navigationBarTheme: NavigationBarThemeData(
+        elevation: 0,
+        height: 72,
+        indicatorShape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(18),
+        ),
+      ),
+      snackBarTheme: SnackBarThemeData(
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
       create: (context) {
         final controller = TimerController();
-        controller.initialize(); // Initialize the controller and session service
+        controller.initialize();
         return controller;
       },
-      child: MaterialApp(
-        title: 'SetTimer',
-        theme: ThemeData(
-          colorScheme: const ColorScheme.dark(
-            primary: Color(0xFF00D4AA),
-            secondary: Color(0xFFFF6B35),
-            surface: Color(0xFF1A1A1A),
-            onSurface: Colors.white,
-          ),
-          useMaterial3: true,
-          fontFamily: 'SF Pro Display',
+      child: DynamicColorBuilder(
+        builder: (lightDynamic, darkDynamic) {
+          final lightScheme = lightDynamic ??
+              ColorScheme.fromSeed(
+                seedColor: const Color(0xFF00BFA5),
+                brightness: Brightness.light,
+              );
+          final darkScheme = darkDynamic ??
+              ColorScheme.fromSeed(
+                seedColor: const Color(0xFF00BFA5),
+                brightness: Brightness.dark,
+              );
 
-          // Improved input decoration theme
-          inputDecorationTheme: InputDecorationTheme(
-            filled: true,
-            fillColor: Colors.white.withOpacity(0.05),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(color: Colors.white.withOpacity(0.2)),
+          return MaterialApp(
+            title: 'SetTimer',
+            theme: _buildTheme(lightScheme),
+            darkTheme: _buildTheme(darkScheme),
+            themeMode: _themeMode == AppThemeMode.light
+                ? ThemeMode.light
+                : _themeMode == AppThemeMode.dark
+                    ? ThemeMode.dark
+                    : ThemeMode.system,
+            home: TimerView(
+              currentThemeMode: _themeMode,
+              onThemeModeChanged: setThemeMode,
             ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(color: Colors.white.withOpacity(0.2)),
-            ),
-            focusedBorder: const OutlineInputBorder(
-              borderRadius: BorderRadius.all(Radius.circular(12)),
-              borderSide: BorderSide(color: Color(0xFF00D4AA), width: 2),
-            ),
-            contentPadding: const EdgeInsets.all(16),
-          ),
-
-          // Enhanced button themes
-          elevatedButtonTheme: ElevatedButtonThemeData(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF00D4AA),
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-            ),
-          ),
-
-          outlinedButtonTheme: OutlinedButtonThemeData(
-            style: OutlinedButton.styleFrom(
-              foregroundColor: Colors.white70,
-              side: BorderSide(color: Colors.white.withOpacity(0.3)),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-            ),
-          ),
-
-          // Dialog theme for better consistency
-          dialogTheme: const DialogTheme(
-            backgroundColor: Color(0xFF1A1A1A),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.all(Radius.circular(20)),
-            ),
-          ),
-
-          // Snackbar theme
-          snackBarTheme: SnackBarThemeData(
-            backgroundColor: const Color(0xFF1A1A1A),
-            contentTextStyle: const TextStyle(color: Colors.white),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-            behavior: SnackBarBehavior.floating,
-          ),
-        ),
-        home: const TimerView(),
-        debugShowCheckedModeBanner: false,
-        // Add keyboard handling
-        builder: (context, child) {
-          return GestureDetector(
-            onTap: () {
-              // Dismiss keyboard when tapping outside input fields
-              FocusScope.of(context).unfocus();
+            debugShowCheckedModeBanner: false,
+            builder: (context, child) {
+              final brightness = Theme.of(context).brightness;
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                _applySystemUi(brightness);
+              });
+              return GestureDetector(
+                onTap: () => FocusScope.of(context).unfocus(),
+                child: child,
+              );
             },
-            child: child,
           );
         },
       ),
