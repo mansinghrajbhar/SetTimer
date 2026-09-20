@@ -22,7 +22,7 @@ dependencies:
   path_provider: ^2.0.0
 
   # Voice Coaching & TTS
-  flutter_tts: ^4.0.2
+  flutter_tts: 4.2.3
 
   # Local Storage
   sqflite: ^2.3.0
@@ -36,13 +36,13 @@ dependencies:
   fl_chart: ^0.65.0
 
   # Screen wakelock to prevent screen from locking during workouts
-  wakelock_plus: ^1.2.1
+  wakelock_plus: 1.2.11
 
   cupertino_icons: ^1.0.8
   http: ^1.4.0
 
   # Hands-free boxing control: phone proximity sensor
-  proximity_sensor: ^1.3.10
+  proximity_sensor: 1.3.10
 
 dependency_overrides:
   # Keep the transitive package_info_plus version compatible with this project's Android toolchain.
