@@ -1,22 +1,26 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:proximity_sensor/proximity_sensor.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 enum SensorTriggerMode {
   disabled,
   proximity,
 }
 
-/// Handles the phone's proximity sensor for hands-free timer control.
+/// Hands-free boxing trigger using the phone proximity sensor.
 ///
-/// On most Android phones the proximity sensor reports NEAR/FAR rather than
-/// an exact distance. For boxing, place the glove close to the top/front
-/// sensor area to trigger a single start/pause action.
+/// Most Android proximity sensors report NEAR/FAR instead of an exact
+/// distance. The service triggers only on a FAR -> NEAR transition and
+/// ignores the first reading after enabling to avoid accidental starts.
 class SensorService extends ChangeNotifier {
+  static const _modeKey = 'sensor_trigger_mode';
+
   StreamSubscription<dynamic>? _proximitySubscription;
 
-  SensorTriggerMode _mode = SensorTriggerMode.disabled;
+  SensorTriggerMode _mode = SensorTriggerMode.proximity;
   bool _isProximityNear = false;
+  bool _hasInitialReading = false;
   DateTime _lastTrigger = DateTime.fromMillisecondsSinceEpoch(0);
 
   VoidCallback? onTrigger;
@@ -34,10 +38,38 @@ class SensorService extends ChangeNotifier {
     }
   }
 
+  Future<void> initialize() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final saved = prefs.getString(_modeKey);
+
+      _mode = switch (saved) {
+        'disabled' => SensorTriggerMode.disabled,
+        'proximity' => SensorTriggerMode.proximity,
+        _ => SensorTriggerMode.proximity,
+      };
+
+      if (_mode == SensorTriggerMode.proximity) {
+        _listenProximity();
+      }
+      notifyListeners();
+    } catch (e) {
+      debugPrint('Unable to initialize sensor settings: $e');
+    }
+  }
+
   Future<void> setMode(SensorTriggerMode mode) async {
     await _stopListening();
     _mode = mode;
     _isProximityNear = false;
+    _hasInitialReading = false;
+
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(_modeKey, mode.name);
+    } catch (e) {
+      debugPrint('Unable to save sensor mode: $e');
+    }
 
     if (mode == SensorTriggerMode.proximity) {
       _listenProximity();
@@ -52,8 +84,15 @@ class SensorService extends ChangeNotifier {
         (int event) {
           final isNear = event > 0;
 
-          // Trigger only on FAR -> NEAR. Holding the glove near the sensor
-          // therefore does not repeatedly start/pause the timer.
+          if (!_hasInitialReading) {
+            _isProximityNear = isNear;
+            _hasInitialReading = true;
+            notifyListeners();
+            return;
+          }
+
+          // Only FAR -> NEAR triggers an action. Holding the glove near the
+          // sensor cannot repeatedly start/pause the timer.
           if (isNear && !_isProximityNear) {
             _trigger();
           }
@@ -73,7 +112,7 @@ class SensorService extends ChangeNotifier {
   void _trigger() {
     final now = DateTime.now();
 
-    // Ignore duplicate/noisy hardware events for a short cooldown.
+    // Hardware sensors can produce very fast duplicate transitions.
     if (now.difference(_lastTrigger).inMilliseconds < 900) {
       return;
     }
