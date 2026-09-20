@@ -464,8 +464,12 @@ class DatabaseService {
     final totalSessions = Sqflite.firstIntValue(totalResult) ?? 0;
 
     // Completed sessions
-    final completedWhereClause = whereClause.isEmpty ? "WHERE status = 'completed'" : "$whereClause AND status = 'completed'";
-    final completedArgs = [...whereArgs, if (whereClause.isEmpty) 'completed'];
+    final completedWhereClause = whereClause.isEmpty
+        ? "WHERE status = 'completed'"
+        : "$whereClause AND status = 'completed'";
+    // The status value is embedded directly in the SQL, so there is no
+    // placeholder for an extra "completed" argument.
+    final completedArgs = [...whereArgs];
 
     final completedResult = await db.rawQuery(
       'SELECT COUNT(*) as count FROM workout_sessions $completedWhereClause',
