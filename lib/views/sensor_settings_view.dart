@@ -29,10 +29,10 @@ class _SensorSettingsViewState extends State<SensorSettingsView> {
             padding: const EdgeInsets.all(20),
             children: [
               _infoCard(
-                title: 'Hands-Free Start / Pause',
+                title: 'Hands-Free Boxing Mode',
                 text:
-                    'One sensor trigger starts or resumes the timer. '
-                    'The next trigger pauses it. Manual buttons still work.',
+                    'One proximity trigger starts or resumes the timer. '
+                    'The next proximity trigger pauses it. Manual buttons still work.',
               ),
               const SizedBox(height: 20),
               const Text(
@@ -63,14 +63,6 @@ class _SensorSettingsViewState extends State<SensorSettingsView> {
                     value: SensorTriggerMode.proximity,
                     child: Text('Proximity sensor'),
                   ),
-                  DropdownMenuItem(
-                    value: SensorTriggerMode.light,
-                    child: Text('Light sensor'),
-                  ),
-                  DropdownMenuItem(
-                    value: SensorTriggerMode.both,
-                    child: Text('Proximity + Light'),
-                  ),
                 ],
                 onChanged: (mode) {
                   if (mode != null) {
@@ -79,46 +71,6 @@ class _SensorSettingsViewState extends State<SensorSettingsView> {
                 },
               ),
               const SizedBox(height: 24),
-              if (sensor.mode == SensorTriggerMode.light ||
-                  sensor.mode == SensorTriggerMode.both) ...[
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text(
-                      'Light trigger threshold',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    Text(
-                      '${sensor.lightThreshold.round()} lux',
-                      style: const TextStyle(
-                        color: Color(0xFF00D4AA),
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
-                ),
-                Slider(
-                  value: sensor.lightThreshold,
-                  min: 1,
-                  max: 200,
-                  divisions: 199,
-                  activeColor: const Color(0xFF00D4AA),
-                  onChanged: sensor.setLightThreshold,
-                ),
-                Text(
-                  'Cover the phone light sensor to trigger. '
-                  'Increase the threshold if your room is bright.',
-                  style: TextStyle(
-                    color: Colors.white.withOpacity(0.6),
-                    fontSize: 13,
-                  ),
-                ),
-                const SizedBox(height: 24),
-              ],
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
@@ -138,7 +90,7 @@ class _SensorSettingsViewState extends State<SensorSettingsView> {
                     Expanded(
                       child: Text(
                         sensor.isEnabled
-                            ? 'Sensor mode: ${sensor.modeLabel}'
+                            ? 'Sensor mode: undefined'
                             : 'Sensor control disabled',
                         style: const TextStyle(
                           color: Colors.white,
@@ -151,8 +103,11 @@ class _SensorSettingsViewState extends State<SensorSettingsView> {
               ),
               const SizedBox(height: 16),
               const Text(
-                'Proximity mode is usually the easiest hands-free option. '
-                'Some phones do not have a physical proximity or ambient-light sensor.',
+                'Proximity mode is designed for hands-free boxing. '
+                'Move the glove close to the phone\'s top/front proximity sensor '
+                'to trigger once, then move it away before the next trigger. '
+                'Most phones report NEAR/FAR rather than an exact distance, so '
+                'a precise 2–5 cm range cannot be guaranteed.',
                 style: TextStyle(
                   color: Colors.white54,
                   fontSize: 13,
