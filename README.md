@@ -14,6 +14,7 @@ A minimalist workout timer app designed specifically for set-based workouts like
 - **Audio Alerts**: Clear sound notifications for set start/end and rest periods
 - **Modern UI**: Dark theme with beautiful gradients and intuitive controls
 - **One-Tap Start**: Simple interface focused on workout flow
+- **Hands-Free Sensor Controls**: Start/resume or pause using proximity and ambient-light sensors
 - **Progress Tracking**: Visual progress bar and set counter
 
 ## 📱 Screenshots
@@ -102,6 +103,7 @@ flutter build ios --release
    - **Pause**: Pause the current timer
    - **Reset**: Reset to beginning
    - **Settings**: Modify configuration (only when stopped)
+   - Sensor Controls: Manual, Proximity, Light, or Proximity + Light
 
 ## 🏗️ Architecture
 
