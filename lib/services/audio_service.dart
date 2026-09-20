@@ -225,8 +225,9 @@ class AudioService {
     final config = _getSystemSoundConfig(soundType);
     
     // Use alarm volume for important sounds (set end, workout complete, warning)
-    bool useAlarmVolume = soundType == SoundType.setEnd || 
-                          soundType == SoundType.workoutComplete || 
+    bool useAlarmVolume = soundType == SoundType.setStart ||
+                          soundType == SoundType.setEnd ||
+                          soundType == SoundType.workoutComplete ||
                           soundType == SoundType.warning;
     
     await FlutterRingtonePlayer().play(
@@ -257,7 +258,8 @@ class AudioService {
   Map<String, dynamic> _getClassicSystemSound(SoundType soundType) {
     switch (soundType) {
       case SoundType.setStart:
-        return {'android': AndroidSounds.notification, 'ios': IosSounds.glass};
+        // Use a ringing cue so the beginning of a round is easier to hear.
+        return {'android': AndroidSounds.ringtone, 'ios': IosSounds.triTone};
       case SoundType.setEnd:
         return {'android': AndroidSounds.alarm, 'ios': IosSounds.alarm};
       case SoundType.restStart:
@@ -276,7 +278,8 @@ class AudioService {
   Map<String, dynamic> _getGymSystemSound(SoundType soundType) {
     switch (soundType) {
       case SoundType.setStart:
-        return {'android': AndroidSounds.alarm, 'ios': IosSounds.alarm};
+        // Use the same distinct ringing cue across sound packs.
+        return {'android': AndroidSounds.ringtone, 'ios': IosSounds.triTone};
       case SoundType.setEnd:
         return {'android': AndroidSounds.ringtone, 'ios': IosSounds.triTone};
       case SoundType.restStart:
@@ -295,7 +298,8 @@ class AudioService {
   Map<String, dynamic> _getNatureSystemSound(SoundType soundType) {
     switch (soundType) {
       case SoundType.setStart:
-        return {'android': AndroidSounds.notification, 'ios': IosSounds.glass};
+        // Use a ringing cue so the beginning of a round is easier to hear.
+        return {'android': AndroidSounds.ringtone, 'ios': IosSounds.triTone};
       case SoundType.setEnd:
         return {'android': AndroidSounds.notification, 'ios': IosSounds.receivedMessage};
       case SoundType.restStart:
@@ -314,7 +318,8 @@ class AudioService {
   Map<String, dynamic> _getElectronicSystemSound(SoundType soundType) {
     switch (soundType) {
       case SoundType.setStart:
-        return {'android': AndroidSounds.notification, 'ios': IosSounds.glass};
+        // Use a ringing cue so the beginning of a round is easier to hear.
+        return {'android': AndroidSounds.ringtone, 'ios': IosSounds.triTone};
       case SoundType.setEnd:
         return {'android': AndroidSounds.alarm, 'ios': IosSounds.alarm};
       case SoundType.restStart:
@@ -333,7 +338,8 @@ class AudioService {
   Map<String, dynamic> _getMinimalSystemSound(SoundType soundType) {
     switch (soundType) {
       case SoundType.setStart:
-        return {'android': AndroidSounds.notification, 'ios': IosSounds.glass};
+        // Use a ringing cue so the beginning of a round is easier to hear.
+        return {'android': AndroidSounds.ringtone, 'ios': IosSounds.triTone};
       case SoundType.setEnd:
         return {'android': AndroidSounds.notification, 'ios': IosSounds.glass};
       case SoundType.restStart:
