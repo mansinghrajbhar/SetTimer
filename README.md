@@ -14,7 +14,7 @@ A minimalist workout timer app designed specifically for set-based workouts like
 - **Audio Alerts**: Clear sound notifications for set start/end and rest periods
 - **Modern UI**: Dark theme with beautiful gradients and intuitive controls
 - **One-Tap Start**: Simple interface focused on workout flow
-- **Hands-Free Sensor Controls**: Start/resume or pause using proximity and ambient-light sensors
+- **Hands-Free Proximity Controls**: Start/resume or pause using the phone's proximity sensor
 - **Progress Tracking**: Visual progress bar and set counter
 
 ## 📱 Screenshots
@@ -103,7 +103,7 @@ flutter build ios --release
    - **Pause**: Pause the current timer
    - **Reset**: Reset to beginning
    - **Settings**: Modify configuration (only when stopped)
-   - Sensor Controls: Manual, Proximity, Light, or Proximity + Light
+   - Sensor Controls: Manual or Proximity
 
 ## 🏗️ Architecture
 
@@ -128,7 +128,7 @@ lib/
 - **State Management**: Provider pattern with ChangeNotifier
 - **Audio**: flutter_ringtone_player for system sounds and notifications
 - **Background Processing**: App lifecycle management with timer synchronization
-- **UI**: Material Design 3 with custom dark theme and animations
+- **Hands-Free Android Control**: proximity_sensor\n- **UI**: Material Design 3 with custom dark theme and animations
 - **Platform Integration**: Native iOS audio session and Android wake lock support
 
 ## 🎨 Design Philosophy
@@ -164,10 +164,18 @@ Workout Set Timer embraces minimalism with a focus on:
 ## 📱 Platform Support
 
 ### Android
-- **Minimum SDK**: API 21 (Android 5.0)
+- **Minimum SDK**: API 23 (Android 6.0)
 - **Target SDK**: API 34 (Android 14)
-- **Permissions**: WAKE_LOCK, VIBRATE
-- **Features**: Background processing, system sounds
+- **Features**: Background processing, system sounds, proximity sensor controls
+
+### Hands-Free Boxing Controls
+1. Open **Sensor Controls** from the timer menu.
+2. Select **Proximity sensor**.
+3. Move the glove close to the phone's top/front proximity-sensor area.
+4. A FAR → NEAR transition starts/resumes the timer.
+5. Move the glove away and bring it near again to pause the timer.
+
+Most phone proximity sensors provide a NEAR/FAR state rather than a calibrated distance measurement, so an exact 2–5 cm trigger distance cannot be guaranteed. The activation range depends on the phone hardware.
 
 ### iOS
 - **Deployment Target**: iOS 12.0+
