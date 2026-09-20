@@ -176,7 +176,7 @@ class AudioService {
     // events reuse the existing Classic assets so the pack stays lightweight.
     if (_currentSoundPack == SoundPack.boxing &&
         (soundType == SoundType.setStart || soundType == SoundType.setEnd)) {
-      return 'sounds/boxing/boxing_bell.wav';
+      return 'sounds/boxing/boxing_ring.mp3';
     }
 
     final packName = _currentSoundPack.name;
