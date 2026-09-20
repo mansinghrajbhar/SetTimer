@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:developer' as developer;
 
@@ -7,44 +6,47 @@ class BackgroundService {
 
   Future<void> enableBackgroundMode() async {
     try {
-      // Set system UI to immersive mode for better focus
-      SystemChrome.setEnabledSystemUIMode(
+      // Full-screen training mode: hide status/navigation bars while the
+      // workout is actively running. Android can still restore them when
+      // the user exits immersive mode.
+      await SystemChrome.setEnabledSystemUIMode(
         SystemUiMode.immersiveSticky,
       );
 
-      // Prevent system UI from showing during timer
-      SystemChrome.setSystemUIOverlayStyle(
-        const SystemUiOverlayStyle(
-          statusBarColor: Colors.transparent,
-          statusBarBrightness: Brightness.dark,
-          statusBarIconBrightness: Brightness.light,
-          systemNavigationBarColor: Colors.transparent,
-          systemNavigationBarIconBrightness: Brightness.light,
-        ),
-      );
-
       _isBackgroundModeEnabled = true;
-      developer.log('Background Mode Enabled - Immersive UI activated', name: 'BackgroundService');
+      developer.log(
+        'Training mode enabled - immersive UI activated',
+        name: 'BackgroundService',
+      );
     } catch (e) {
-      developer.log('Failed to enable background mode: $e', name: 'BackgroundService', level: 1000);
+      developer.log(
+        'Failed to enable training mode: $e',
+        name: 'BackgroundService',
+        level: 1000,
+      );
     }
   }
 
   Future<void> disableBackgroundMode() async {
     try {
-      // Restore normal system UI
-      SystemChrome.setEnabledSystemUIMode(
+      await SystemChrome.setEnabledSystemUIMode(
         SystemUiMode.manual,
         overlays: SystemUiOverlay.values,
       );
 
-      // Reset system UI overlay style to default
-      SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.dark);
-
+      // Do not hard-code light/dark system-bar icon colors here. The
+      // Material app supplies the current theme through AnnotatedRegion.
       _isBackgroundModeEnabled = false;
-      developer.log('Background Mode Disabled - Normal UI restored', name: 'BackgroundService');
+      developer.log(
+        'Training mode disabled - normal system UI restored',
+        name: 'BackgroundService',
+      );
     } catch (e) {
-      developer.log('Failed to disable background mode: $e', name: 'BackgroundService', level: 1000);
+      developer.log(
+        'Failed to disable training mode: $e',
+        name: 'BackgroundService',
+        level: 1000,
+      );
     }
   }
 
